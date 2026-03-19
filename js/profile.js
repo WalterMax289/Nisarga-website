@@ -27,10 +27,7 @@ function updateUI() {
         email: document.getElementById('displayEmail'),
         phone: document.getElementById('displayPhone'),
         avatar: document.getElementById('displayAvatar'),
-        status: document.getElementById('userStatus'),
-        editBtn: document.getElementById('editProfileBtn'),
-        formContainer: document.getElementById('profileFormContainer'),
-        displayContainer: document.getElementById('profileDisplayContainer')
+        status: document.getElementById('userStatus')
     };
 
     if (elements.name) elements.name.textContent = profile.username;
@@ -41,14 +38,48 @@ function updateUI() {
     if (elements.avatar) {
         const initials = profile.username.split(' ').map(n => n[0]).join('').toUpperCase();
         elements.avatar.textContent = initials.substring(0, 2);
+        // Change background based on guest status
+        elements.avatar.style.background = profile.isGuest ? 'var(--accent-cyan)' : 'var(--primary-blue)';
     }
+
+    renderOrderHistory();
+}
+
+function renderOrderHistory() {
+    const orderList = document.getElementById('orderHistoryList');
+    if (!orderList) return;
+
+    const orders = JSON.parse(localStorage.getItem('nisarga_orders') || '[]');
+
+    if (orders.length === 0) {
+        orderList.innerHTML = `
+            <div class="empty-orders" style="text-align: center; padding: 40px 0; color: rgba(255,255,255,0.4);">
+                <p>No orders placed yet.</p>
+                <a href="order.html" class="btn btn-outline" style="margin-top: 20px; display: inline-block;">Order Now</a>
+            </div>
+        `;
+        return;
+    }
+
+    orderList.innerHTML = orders.map(order => `
+        <div class="history-item">
+            <div>
+                <h4>Order #${order.id}</h4>
+                <small style="color: rgba(255,255,255,0.4);">${order.date} • ${order.qty} Can${order.qty > 1 ? 's' : ''}</small>
+            </div>
+            <div>
+                <span class="status-badge">${order.status}</span>
+                <p style="margin-top: 8px;">₹${order.total}</p>
+            </div>
+        </div>
+    `).join('');
 }
 
 function updateNavbar() {
     const profile = loadProfile();
     const navProfileLink = document.querySelector('a[href="profile.html"]');
-    if (navProfileLink && !profile.isGuest) {
-        navProfileLink.textContent = profile.username;
+    if (navProfileLink) {
+        navProfileLink.textContent = profile.isGuest ? 'My Profile' : profile.username;
     }
 }
 

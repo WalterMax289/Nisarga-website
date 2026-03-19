@@ -115,36 +115,11 @@
 
             <div class="glass-card order-history-card">
                 <h3 style="margin-bottom: 30px;">Recent Orders</h3>
-                <div class="history-list">
-                    <div class="history-item">
-                        <div>
-                            <h4>Order #NS-4921</h4>
-                            <small style="color: rgba(255,255,255,0.4);">March 15, 2026 • 2 Cans</small>
-                        </div>
-                        <div>
-                            <span class="status-badge">Delivered</span>
-                            <p style="margin-top: 8px;">₹120</p>
-                        </div>
-                    </div>
-                    <div class="history-item">
-                        <div>
-                            <h4>Order #NS-4855</h4>
-                            <small style="color: rgba(255,255,255,0.4);">March 08, 2026 • 5 Cans</small>
-                        </div>
-                        <div>
-                            <span class="status-badge">Delivered</span>
-                            <p style="margin-top: 8px;">₹300</p>
-                        </div>
-                    </div>
-                    <div class="history-item">
-                        <div>
-                            <h4>Order #NS-4712</h4>
-                            <small style="color: rgba(255,255,255,0.4);">Feb 28, 2026 • 1 Can</small>
-                        </div>
-                        <div>
-                            <span class="status-badge">Delivered</span>
-                            <p style="margin-top: 8px;">₹60</p>
-                        </div>
+                <div id="orderHistoryList" class="history-list">
+                    <!-- Dynamic orders will be injected here -->
+                    <div class="empty-orders" style="text-align: center; padding: 40px 0; color: rgba(255,255,255,0.4);">
+                        <p>No orders placed yet.</p>
+                        <a href="order.html" class="btn btn-outline" style="margin-top: 20px; display: inline-block;">Order Now</a>
                     </div>
                 </div>
             </div>

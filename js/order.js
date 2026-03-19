@@ -201,6 +201,20 @@ document.getElementById('orderForm').addEventListener('submit', (e) => {
         return;
     }
 
-    alert(`Order Placed Successfully!\n\nBranding: Nisarga Sri Vinayaka Minerals\nQuantity: ${qty} cans\nTotal: ₹${qty * PRICE_PER_CAN}\nAddress: ${address}\nCoords: ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`);
+    const orderData = {
+        id: `NS-${Math.floor(1000 + Math.random() * 9000)}`,
+        date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+        qty: qty,
+        total: qty * PRICE_PER_CAN,
+        status: 'Delivered' // For simulation, set to delivered immediately
+    };
+
+    // Save to localStorage
+    const existingOrders = JSON.parse(localStorage.getItem('nisarga_orders') || '[]');
+    existingOrders.unshift(orderData); // Add to beginning
+    localStorage.setItem('nisarga_orders', JSON.stringify(existingOrders));
+
+    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.id}\nQuantity: ${qty} cans\nTotal: ₹${qty * PRICE_PER_CAN}\nAddress: ${address}`);
+    window.location.href = 'profile.html'; // Redirect to see the history
 });
 
