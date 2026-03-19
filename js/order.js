@@ -206,15 +206,33 @@ document.getElementById('orderForm').addEventListener('submit', (e) => {
         date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
         qty: qty,
         total: qty * PRICE_PER_CAN,
-        status: 'Delivered' // For simulation, set to delivered immediately
+        status: 'Delivered' // For simulation
     };
 
     // Save to localStorage
     const existingOrders = JSON.parse(localStorage.getItem('nisarga_orders') || '[]');
-    existingOrders.unshift(orderData); // Add to beginning
+    existingOrders.unshift(orderData);
     localStorage.setItem('nisarga_orders', JSON.stringify(existingOrders));
 
-    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.id}\nQuantity: ${qty} cans\nTotal: ₹${qty * PRICE_PER_CAN}\nAddress: ${address}`);
-    window.location.href = 'profile.html'; // Redirect to see the history
+    // Get User Details for Notification
+    const userProfile = JSON.parse(localStorage.getItem('nisarga_user_profile') || '{}');
+    const userName = userProfile.username || 'Guest';
+    const userPhone = userProfile.phone || 'Not provided';
+    
+    const ownerPhone = "8792678849";
+    const waMessage = `*New Order Alert - Nisarga Sri Vinayaka Minerals*%0A%0A` +
+        `*Name:* ${userName}%0A` +
+        `*Phone:* ${userPhone}%0A` +
+        `*Quantity:* ${qty} Cans%0A` +
+        `*Total:* ₹${orderData.total}%0A` +
+        `*Address:* ${address}%0A` +
+        `*Order ID:* ${orderData.id}%0A%0A` +
+        `_Please process this order accordingly._`;
+
+    const waURL = `https://wa.me/91${ownerPhone}?text=${waMessage}`;
+
+    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.id}\n\nYou will now be redirected to WhatsApp to confirm your order with the owner.`);
+    window.open(waURL, '_blank');
+    window.location.href = 'profile.html';
 });
 
