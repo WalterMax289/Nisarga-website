@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Nisarga Sri Vinayaka Minerals</title>
+    <meta name="description" content="Manage your Nisarga account, view order history, and update your delivery preferences.">
+    <link rel="icon" type="image/png" href="assets/nisarga-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 40px;
+        }
+        .user-sidebar {
+            padding: 40px;
+            text-align: center;
+        }
+        .avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--accent-cyan), #00a8ff);
+            border-radius: 50%;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary-blue);
+            font-weight: 800;
+        }
+        .order-history-card {
+            padding: 40px;
+        }
+        .history-item {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body style="background: var(--deep-ocean);">
+
+    <nav id="navbar" class="scrolled">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="assets/nisarga-logo.png" alt="Nisarga Logo">
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="order.html">Order Now</a></li>
+                <li><a href="profile.html">My Profile</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 150px; padding-bottom: 100px;">
+        <div class="profile-grid">
+            <div class="glass-card user-sidebar">
+                <div id="profileDisplayContainer">
+                    <div class="avatar" id="displayAvatar">G</div>
+                    <h3 id="displayName">Guest</h3>
+                    <p id="userStatus" style="color: rgba(255,255,255,0.5); margin-bottom: 30px;">Guest User</p>
+                    <div style="text-align: left; margin-bottom: 40px;">
+                        <div style="margin-bottom: 15px;">
+                            <small style="color: var(--accent-cyan);">Email</small>
+                            <p id="displayEmail">Not logged in</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <small style="color: var(--accent-cyan);">Phone</small>
+                            <p id="displayPhone">None</p>
+                        </div>
+                    </div>
+                    <button id="editProfileBtn" class="btn btn-outline" style="width: 100%;">Login / Edit Profile</button>
+                </div>
+
+                <div id="profileFormContainer" style="display: none; text-align: left;">
+                    <h3 style="margin-bottom: 20px; color: var(--accent-cyan);">Update Profile</h3>
+                    <form id="profileForm">
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label style="font-size: 0.8rem;">Username</label>
+                            <input type="text" id="editUsername" required placeholder="Enter username">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label style="font-size: 0.8rem;">Email</label>
+                            <input type="email" id="editEmail" required placeholder="Enter email">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 25px;">
+                            <label style="font-size: 0.8rem;">Phone</label>
+                            <input type="tel" id="editPhone" required placeholder="Enter phone number">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 10px;">Save Profile</button>
+                        <button type="button" id="cancelEditBtn" class="btn btn-outline" style="width: 100%;">Cancel</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="glass-card order-history-card">
+                <h3 style="margin-bottom: 30px;">Recent Orders</h3>
+                <div class="history-list">
+                    <div class="history-item">
+                        <div>
+                            <h4>Order #NS-4921</h4>
+                            <small style="color: rgba(255,255,255,0.4);">March 15, 2026 • 2 Cans</small>
+                        </div>
+                        <div>
+                            <span class="status-badge">Delivered</span>
+                            <p style="margin-top: 8px;">₹120</p>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div>
+                            <h4>Order #NS-4855</h4>
+                            <small style="color: rgba(255,255,255,0.4);">March 08, 2026 • 5 Cans</small>
+                        </div>
+                        <div>
+                            <span class="status-badge">Delivered</span>
+                            <p style="margin-top: 8px;">₹300</p>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div>
+                            <h4>Order #NS-4712</h4>
+                            <small style="color: rgba(255,255,255,0.4);">Feb 28, 2026 • 1 Can</small>
+                        </div>
+                        <div>
+                            <span class="status-badge">Delivered</span>
+                            <p style="margin-top: 8px;">₹60</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer style="padding: 50px 0; text-align: center; border-top: 1px solid var(--glass-border);">
+        <div class="container">
+            <p style="color: rgba(255,255,255,0.4);">&copy; 2026 Nisarga Sri Vinayaka Minerals. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: rgba(255,255,255,0.3);">Near Vinayaka Theater, Devanahalli, Bengaluru 562110</p>
+        </div>
+    </footer>
+
+    <script src="js/profile.js"></script>
+</body>
+</html>
