@@ -46,6 +46,16 @@ a {
     transition: var(--transition-smooth);
 }
 
+input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px rgba(0, 30, 60, 0.9) inset;
+    -webkit-text-fill-color: #fff;
+}
+
 ul {
     list-style: none;
 }
