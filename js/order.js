@@ -1,38 +1,12 @@
 let map;
 let marker;
-
-const quantityInput = document.getElementById('quantity');
-const totalAmountDisplay = document.getElementById('totalAmount');
-const btnMinus = document.getElementById('btnMinus');
-const btnPlus = document.getElementById('btnPlus');
 const PRICE_PER_CAN = 60;
 
-// Quantity Selector Logic
-function updatePrice() {
-    const qty = parseInt(quantityInput.value) || 0;
-    totalAmountDisplay.textContent = qty * PRICE_PER_CAN;
-}
-
-btnPlus.addEventListener('click', () => {
-    quantityInput.value = parseInt(quantityInput.value) + 1;
-    updatePrice();
-});
-
-btnMinus.addEventListener('click', () => {
-    if (parseInt(quantityInput.value) > 1) {
-        quantityInput.value = parseInt(quantityInput.value) - 1;
-        updatePrice();
-    }
-});
-
-// Business Configuration
-const BUSINESS_LOCATION = [13.2438, 77.7095]; // Devanahalli (Next to Dmart, opposite Bharat Petroleum)
+const BUSINESS_LOCATION = [13.2438, 77.7095];
 const MAX_RADIUS_KM = 7;
 
-
-// Helper: Calculate distance between two points (Km)
 function getDistance(p1, p2) {
-    const R = 6371; // Earth's radius in km
+    const R = 6371;
     const dLat = (p2[0] - p1[0]) * Math.PI / 180;
     const dLon = (p2[1] - p1[1]) * Math.PI / 180;
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -42,9 +16,7 @@ function getDistance(p1, p2) {
     return R * c;
 }
 
-// Map Initialization (Leaflet)
 function initMap() {
-    // Define Base Layers
     const streetView = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
@@ -52,13 +24,13 @@ function initMap() {
     });
 
     const satelliteView = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EBP, and the GIS User Community'
+        attribution: 'Tiles &copy; Esri'
     });
 
     map = L.map('map', {
         center: BUSINESS_LOCATION,
         zoom: 12,
-        layers: [streetView] // Default layer
+        layers: [streetView]
     });
 
     const baseMaps = {
@@ -66,73 +38,66 @@ function initMap() {
         "Satellite View": satelliteView
     };
 
-    // Add Layer Control
     L.control.layers(baseMaps).addTo(map);
 
-
-    // Draw 10km Service Radius Circle
-    const circle = L.circle(BUSINESS_LOCATION, {
+    L.circle(BUSINESS_LOCATION, {
         color: '#00d4ff',
         fillColor: '#00d4ff',
         fillOpacity: 0.1,
-        radius: MAX_RADIUS_KM * 1000 // meters
+        radius: MAX_RADIUS_KM * 1000
     }).addTo(map);
 
     marker = L.marker(BUSINESS_LOCATION, { draggable: true }).addTo(map);
 
-    // Returns true if location is OUT of range (invalid), false if within range (valid)
     function validatePosition(latlng) {
         const dist = getDistance(BUSINESS_LOCATION, [latlng.lat, latlng.lng]);
         if (dist > MAX_RADIUS_KM) {
-            alert(`This location is too far! We only deliver within a ${MAX_RADIUS_KM}km radius of our Devanahalli center.\n\nYour distance: ${dist.toFixed(1)}km`);
-            return true; // out of range = invalid
+            alert(`This location is too far! We only deliver within a ${MAX_RADIUS_KM}km radius.\n\nYour distance: ${dist.toFixed(1)}km`);
+            return false;
         }
-        return false; // within range = valid
+        return true;
     }
 
+    function reverseGeocode(lat, lng) {
+        fetch(`https://photon.komoot.io/reverse?lon=${lng}&lat=${lat}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.features && data.features.length > 0) {
+                    const props = data.features[0].properties;
+                    const name = props.name || '';
+                    const city = props.city || '';
+                    const district = props.district || '';
+                    const addressParts = [name, district, city].filter(Boolean);
+                    const searchInput = document.getElementById('autocomplete');
+                    if (searchInput) {
+                        searchInput.value = addressParts.join(', ');
+                    }
+                }
+            })
+            .catch(err => console.error('Reverse Geocode error:', err));
+    }
 
-    // Handle marker drag
     marker.on('dragend', (e) => {
-        if (!validatePosition(e.target.getLatLng())) {
-            marker.setLatLng(BUSINESS_LOCATION); // Snap back
+        const position = e.target.getLatLng();
+        if (!validatePosition(position)) {
+            marker.setLatLng(BUSINESS_LOCATION);
             map.setView(BUSINESS_LOCATION, 12);
+        } else {
+            reverseGeocode(position.lat, position.lng);
         }
     });
 
-    // Click on map to move marker
     map.on('click', (e) => {
         if (validatePosition(e.latlng)) {
             marker.setLatLng(e.latlng);
+            reverseGeocode(e.latlng.lat, e.latlng.lng);
         }
     });
 }
 
-// Photon Search Logic (Detect location as you type)
-const searchInput = document.getElementById('autocomplete');
-const searchResults = document.getElementById('searchResults');
-let searchTimeout;
-
-searchInput.addEventListener('input', () => {
-    clearTimeout(searchTimeout);
-    const query = searchInput.value;
-
-    if (query.length < 3) {
-        searchResults.style.display = 'none';
-        return;
-    }
-
-    // Debounce search
-    searchTimeout = setTimeout(() => {
-        fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`)
-            .then(res => res.json())
-            .then(data => {
-                displayResults(data.features);
-            });
-    }, 400);
-});
-
 function displayResults(features) {
-    if (!features || features.length === 0) {
+    const searchResults = document.getElementById('searchResults');
+    if (!features || features.length === 0 || !searchResults) {
         searchResults.style.display = 'none';
         return;
     }
@@ -160,10 +125,11 @@ function displayResults(features) {
                 return;
             }
 
-
-            map.setView([lat, lng], 16);
-            marker.setLatLng([lat, lng]);
-            searchInput.value = div.textContent;
+            if (map) map.setView([lat, lng], 16);
+            if (marker) marker.setLatLng([lat, lng]);
+            
+            const searchInput = document.getElementById('autocomplete');
+            if (searchInput) searchInput.value = div.textContent;
             searchResults.style.display = 'none';
         };
 
@@ -176,67 +142,117 @@ function displayResults(features) {
     searchResults.style.display = 'block';
 }
 
-// Close search if clicking outside
-document.addEventListener('click', (e) => {
-    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-        searchResults.style.display = 'none';
+document.addEventListener('DOMContentLoaded', () => {
+    const quantityInput = document.getElementById('quantity');
+    const totalAmountDisplay = document.getElementById('totalAmount');
+    const btnMinus = document.getElementById('btnMinus');
+    const btnPlus = document.getElementById('btnPlus');
+    const searchInput = document.getElementById('autocomplete');
+    const searchResults = document.getElementById('searchResults');
+    const orderForm = document.getElementById('orderForm');
+
+    if (quantityInput && totalAmountDisplay && btnMinus && btnPlus) {
+        function updatePrice() {
+            const qty = parseInt(quantityInput.value) || 0;
+            totalAmountDisplay.textContent = qty * PRICE_PER_CAN;
+        }
+
+        btnPlus.addEventListener('click', () => {
+            quantityInput.value = parseInt(quantityInput.value) + 1;
+            updatePrice();
+        });
+
+        btnMinus.addEventListener('click', () => {
+            if (parseInt(quantityInput.value) > 1) {
+                quantityInput.value = parseInt(quantityInput.value) - 1;
+                updatePrice();
+            }
+        });
+
+        updatePrice();
+    }
+
+    if (searchInput && searchResults) {
+        let searchTimeout;
+
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const query = searchInput.value;
+
+            if (query.length < 3) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`)
+                    .then(res => res.json())
+                    .then(data => {
+                        displayResults(data.features);
+                    })
+                    .catch(err => console.error('Search error:', err));
+            }, 400);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    }
+
+    if (orderForm) {
+        orderForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (!marker) {
+                alert("Please select a location on the map.");
+                return;
+            }
+
+            const pos = marker.getLatLng();
+            const qty = quantityInput ? quantityInput.value : 1;
+            const address = searchInput ? searchInput.value : '';
+            
+            const dist = getDistance(BUSINESS_LOCATION, [pos.lat, pos.lng]);
+            if (dist > MAX_RADIUS_KM) {
+                alert(`Delivery location is ${dist.toFixed(1)}km away, exceeds our ${MAX_RADIUS_KM}km limit.`);
+                return;
+            }
+
+            if (!address) {
+                alert("Please enter a delivery address.");
+                return;
+            }
+
+            const orderData = {
+                id: `NS-${Math.floor(1000 + Math.random() * 9000)}`,
+                date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+                qty: qty,
+                total: qty * PRICE_PER_CAN,
+                status: 'Delivered'
+            };
+
+            const existingOrders = JSON.parse(localStorage.getItem('nisarga_orders') || '[]');
+            existingOrders.unshift(orderData);
+            localStorage.setItem('nisarga_orders', JSON.stringify(existingOrders));
+
+            const userProfile = JSON.parse(localStorage.getItem('nisarga_user_profile') || '{}');
+            const userName = userProfile.username || 'Guest';
+            const userPhone = userProfile.phone || 'Not provided';
+            
+            const ownerPhone = "8792678849";
+            const waMessage = `*New Order - Nisarga*%0A%0A*Name:* ${userName}%0A*Phone:* ${userPhone}%0A*Quantity:* ${qty} Cans%0A*Total:* ₹${orderData.total}%0A*Address:* ${address}%0A*Order ID:* ${orderData.id}`;
+
+            const waURL = `https://wa.me/91${ownerPhone}?text=${waMessage}`;
+
+            alert(`Order Placed!\n\nOrder ID: ${orderData.id}\n\nRedirecting to WhatsApp to confirm.`);
+            window.open(waURL, '_blank');
+            window.location.href = 'profile.html';
+        });
+    }
+
+    if (typeof L !== 'undefined') {
+        initMap();
     }
 });
-
-// Initialize everything
-window.onload = initMap;
-
-// Form Submission
-document.getElementById('orderForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const pos = marker.getLatLng();
-    const qty = quantityInput.value;
-    const address = searchInput.value;
-    
-    // Final Radius Check
-    const dist = getDistance(BUSINESS_LOCATION, [pos.lat, pos.lng]);
-    if (dist > MAX_RADIUS_KM) {
-        alert(`Final Check: Delivery location is ${dist.toFixed(1)}km away, which exceeds our ${MAX_RADIUS_KM}km limit.`);
-        return;
-    }
-
-    if(!address) {
-        alert("Please enter a delivery address.");
-        return;
-    }
-
-    const orderData = {
-        id: `NS-${Math.floor(1000 + Math.random() * 9000)}`,
-        date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        qty: qty,
-        total: qty * PRICE_PER_CAN,
-        status: 'Delivered' // For simulation
-    };
-
-    // Save to localStorage
-    const existingOrders = JSON.parse(localStorage.getItem('nisarga_orders') || '[]');
-    existingOrders.unshift(orderData);
-    localStorage.setItem('nisarga_orders', JSON.stringify(existingOrders));
-
-    // Get User Details for Notification
-    const userProfile = JSON.parse(localStorage.getItem('nisarga_user_profile') || '{}');
-    const userName = userProfile.username || 'Guest';
-    const userPhone = userProfile.phone || 'Not provided';
-    
-    const ownerPhone = "8792678849";
-    const waMessage = `*New Order Alert - Nisarga Sri Vinayaka Minerals*%0A%0A` +
-        `*Name:* ${userName}%0A` +
-        `*Phone:* ${userPhone}%0A` +
-        `*Quantity:* ${qty} Cans%0A` +
-        `*Total:* ₹${orderData.total}%0A` +
-        `*Address:* ${address}%0A` +
-        `*Order ID:* ${orderData.id}%0A%0A` +
-        `_Please process this order accordingly._`;
-
-    const waURL = `https://wa.me/91${ownerPhone}?text=${waMessage}`;
-
-    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.id}\n\nYou will now be redirected to WhatsApp to confirm your order with the owner.`);
-    window.open(waURL, '_blank');
-    window.location.href = 'profile.html';
-});
-
