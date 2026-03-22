@@ -39,7 +39,10 @@ function updateUI() {
         const initials = profile.username.split(' ').map(n => n[0]).join('').toUpperCase();
         elements.avatar.textContent = initials.substring(0, 2);
         // Change background based on guest status
-        elements.avatar.style.background = profile.isGuest ? 'var(--accent-cyan)' : 'var(--primary-blue)';
+        // Guests: blue (default/neutral), Logged-in: cyan gradient (premium feel)
+        elements.avatar.style.background = profile.isGuest 
+            ? 'var(--primary-blue)' 
+            : 'linear-gradient(135deg, var(--accent-cyan), #00a8ff)';
     }
 
     renderOrderHistory();

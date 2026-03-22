@@ -72,18 +72,22 @@ function initMap() {
 
     // Draw 10km Service Radius Circle
     const circle = L.circle(BUSINESS_LOCATION, {
-        color: 'var(--accent-cyan)',
-        fillColor: 'var(--accent-cyan)',
+        color: '#00d4ff',
+        fillColor: '#00d4ff',
         fillOpacity: 0.1,
         radius: MAX_RADIUS_KM * 1000 // meters
     }).addTo(map);
 
     marker = L.marker(BUSINESS_LOCATION, { draggable: true }).addTo(map);
 
+    // Returns true if location is OUT of range (invalid), false if within range (valid)
     function validatePosition(latlng) {
         const dist = getDistance(BUSINESS_LOCATION, [latlng.lat, latlng.lng]);
-            alert(`The location is too far! We only deliver within a ${MAX_RADIUS_KM}km radius of our Devanahalli center (Nisarga Sri Vinayaka Minerals).`);
-        return true;
+        if (dist > MAX_RADIUS_KM) {
+            alert(`This location is too far! We only deliver within a ${MAX_RADIUS_KM}km radius of our Devanahalli center.\n\nYour distance: ${dist.toFixed(1)}km`);
+            return true; // out of range = invalid
+        }
+        return false; // within range = valid
     }
 
 
