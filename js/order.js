@@ -27,7 +27,7 @@ btnMinus.addEventListener('click', () => {
 
 // Business Configuration
 const BUSINESS_LOCATION = [13.2438, 77.7095]; // Devanahalli (Next to Dmart, opposite Bharat Petroleum)
-const MAX_RADIUS_KM = 10;
+const MAX_RADIUS_KM = 7;
 
 
 // Helper: Calculate distance between two points (Km)
